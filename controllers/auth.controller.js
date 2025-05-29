@@ -25,7 +25,6 @@ exports.login = async (req, res) => {
   }
 };
 
-// Verifica que un token JWT siga siendo válido
 exports.verifyToken = (req, res) => {
   try {
     const { token } = req.body;
@@ -36,11 +35,10 @@ exports.verifyToken = (req, res) => {
   }
 };
 
-// Emite un nuevo token a partir de uno válido (mismo payload)
 exports.refreshToken = (req, res) => {
   try {
     const { token } = req.body;
-    const payload = verifyToken(token);         // si expira aquí, catch devolverá 401
+    const payload = verifyToken(token);
     delete payload.iat;
     delete payload.exp;
     const newToken = signToken(payload);
@@ -49,3 +47,4 @@ exports.refreshToken = (req, res) => {
     res.status(401).json({ message: 'No se pudo refrescar: token inválido o expirado' });
   }
 };
+

@@ -1,27 +1,16 @@
-// routes/order.routes.js
-//const express = require('express');
-//const router = express.Router();
-//const orderController = require('../controllers/order.controller');
-//const authenticate = require('../middlewares/auth');
-
-//router.post('/',   authenticate, orderController.create);
-//router.get('/',    authenticate, orderController.list);
-//router.put('/:id', authenticate, orderController.update);
-//router.delete('/:id', authenticate, orderController.remove);
-
-//module.exports = router;
-
 const express = require('express'); 
 const router = express.Router();
 const controller = require('../controllers/pedido.controller');
 const authenticate = require('../middlewares/auth');
+const audit = require('../middlewares/audit');
 
-// Rutas protegidas con autenticación
+// Rutas protegidas con autenticación y auditoría donde aplica
 router.get('/', authenticate, controller.list);
-router.post('/', authenticate, controller.create);
+router.post('/', authenticate, audit('crear', 'pedidos'), controller.create);
 router.get('/:id', authenticate, controller.getById);
-router.put('/:id', authenticate, controller.update); // <- Corregido aquí
-router.delete('/:id', authenticate, controller.softDelete);
+router.put('/:id', authenticate, audit('actualizar', 'pedidos'), controller.update);
+router.delete('/:id', authenticate, audit('eliminar', 'pedidos'), controller.softDelete);
 
 module.exports = router;
+
 

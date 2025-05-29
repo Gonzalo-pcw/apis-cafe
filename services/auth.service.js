@@ -23,3 +23,4 @@ async function validateCredentials(email, password) {
 }
 
 module.exports = { registerUser, validateCredentials };
+

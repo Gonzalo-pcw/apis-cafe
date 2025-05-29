@@ -100,9 +100,6 @@ exports.deleteValor = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // No verificamos si el valor existe antes, por simplicidad,
-    // pero se puede agregar si deseas.
-
     const eliminado = await OpcionValor.softDelete(id);
 
     if (!eliminado) {

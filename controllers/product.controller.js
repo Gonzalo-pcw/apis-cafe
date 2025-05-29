@@ -3,6 +3,7 @@ const productService = require('../services/product.service');
 exports.create = async (req, res) => {
   try {
     const id = await productService.createProduct(req.body);
+    res.locals.newId = id; // Para el middleware de auditoría
     res.status(201).json({ id });
   } catch {
     res.status(500).json({ message: 'Error al crear producto' });
@@ -22,10 +23,13 @@ exports.getById = async (req, res) => {
 
 exports.update = async (req, res) => {
   await productService.updateProduct(req.params.id, req.body);
+  res.locals.newId = req.params.id; // Para el middleware de auditoría
   res.json({ message: 'Producto actualizado' });
 };
 
 exports.remove = async (req, res) => {
   await productService.removeProduct(req.params.id);
+  res.locals.newId = req.params.id; // Para el middleware de auditoría
   res.json({ message: 'Producto eliminado' });
 };
+

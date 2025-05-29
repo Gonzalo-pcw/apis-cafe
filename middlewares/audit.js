@@ -5,7 +5,7 @@ const audit = (accion, tabla) => {
     res.on('finish', async () => {
       try {
         const usuario_id = req.user?.id || null;
-        const registro_id = req.params.id || null;
+        const registro_id = res.locals.newId || req.params.id || null;
         const detalles = req.body || {};
         const ip_address = req.ip;
 
