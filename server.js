@@ -38,6 +38,9 @@ app.use('/api/historial', require('./routes/historial.routes'));
 // ** Rutas de pagos **
 app.use('/api/pagos', require('./routes/pagos.routes'));
 
+// ** Rutas de roles **
+app.use('/api/roles', require('./routes/roles.routes'));
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor ejecutándose en http://localhost:${PORT}`);

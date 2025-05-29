@@ -16,3 +16,5 @@ router.put('/:id/estado', authenticate, PagosController.actualizarEstado);
 router.delete('/:id', authenticate, PagosController.eliminar);
 
 module.exports = router;
+
+//Que pendiente a revisar
