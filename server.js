@@ -1,4 +1,5 @@
-const express = require('express'); 
+// server.js
+const express = require('express');
 const cors    = require('cors');
 const morgan  = require('morgan');
 require('dotenv').config();
@@ -13,7 +14,8 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/auth.routes'));
 
 // Rutas de pedidos (protegidas con JWT)
-app.use('/api/pedidos', require('./routes/order.routes'));
+// ← Aquí apuntamos a 'pedidos.routes.js' en lugar de 'order.routes.js'
+app.use('/api/pedidos', require('./routes/pedidos.routes'));
 
 // Rutas de detalles de pedidos (por ID de pedido)
 app.use('/api/pedidos/:pedidoId/detalles', require('./routes/detalles.routes'));
@@ -45,7 +47,7 @@ app.use('/api/roles', require('./routes/roles.routes'));
 const notificacionesRoutes = require('./routes/notificaciones.routes');
 app.use('/api/notificaciones', notificacionesRoutes);
 
-// Rutas de Auditoria (audi-logs)
+// Rutas de Auditoría (audit_logs)
 const auditoriaRoutes = require('./routes/auditoria.routes');
 app.use('/api/auditoria', auditoriaRoutes);
 
@@ -53,5 +55,6 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
 });
+
 
 

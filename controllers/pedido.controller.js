@@ -1,8 +1,7 @@
+// controllers/pedido.controller.js
 const Pedido = require('../models/Pedido');
-const DetallePedido = require('../models/DetallePedido');
-const PedidoOpcion = require('../models/PedidoOpcion');
 
-// Obtener todos los pedidos
+// Obtener todos los pedidos (incluye ya detalles y opciones anidadas)
 exports.list = async (req, res) => {
   try {
     const pedidos = await Pedido.findAll();
@@ -13,54 +12,41 @@ exports.list = async (req, res) => {
   }
 };
 
-// Crear un nuevo pedido con sus detalles y opciones
+// Crear un nuevo pedido *sin detalles* (flujo incremental)
+// El frontend recibirá el pedidoId y luego usará /detalles para poblarlo
 exports.create = async (req, res) => {
   try {
-    const { usuario_id, tipo_entrega, horario_entrega, direccion_envio, detalles } = req.body;
+    const { usuario_id, tipo_entrega, horario_entrega, direccion_envio } = req.body;
 
-    // Validación básica
-    if (!usuario_id || !tipo_entrega || !Array.isArray(detalles) || detalles.length === 0) {
-      return res.status(400).json({ message: 'Datos insuficientes para crear el pedido' });
+    // Validación básica: ya no esperamos 'detalles' aquí
+    if (!usuario_id || !tipo_entrega) {
+      return res
+        .status(400)
+        .json({ message: 'Faltan datos obligatorios: usuario_id, tipo_entrega' });
     }
 
-    // Calcular total dinámico
-    let total = 0;
-    for (const item of detalles) {
-      if (!item.producto_id || !item.precio_unitario || !item.cantidad) {
-        return res.status(400).json({ message: 'Cada detalle debe tener producto_id, cantidad y precio_unitario' });
-      }
-      total += item.cantidad * item.precio_unitario;
-    }
+    // Inicialmente guardamos el pedido con total=0 y sin detalles
+    // (El total se irá recalculando a medida que se agreguen detalles)
+    const totalInicial = 0.0;
+    const pedido = await Pedido.create(
+      usuario_id,
+      totalInicial,
+      tipo_entrega,
+      horario_entrega,
+      direccion_envio
+    );
 
-    // Crear el pedido principal
-    const pedido = await Pedido.create(usuario_id, total, tipo_entrega, horario_entrega, direccion_envio);
-
-    // Crear los detalles y sus opciones
-    for (const item of detalles) {
-      const detalle = await DetallePedido.create(
-        pedido.id,
-        item.producto_id,
-        item.cantidad,
-        item.precio_unitario
-      );
-
-      // Insertar las opciones (si las hay)
-      if (Array.isArray(item.opciones)) {
-        for (const opcion_id of item.opciones) {
-          await PedidoOpcion.create(detalle.id, opcion_id);
-        }
-      }
-    }
-
-    const pedidoCompleto = await Pedido.findById(pedido.id);
-    res.status(201).json({ message: 'Pedido creado exitosamente', pedido: pedidoCompleto });
+    // Devolver únicamente el ID recién creado; los detalles se agregan después
+    res
+      .status(201)
+      .json({ message: 'Pedido creado exitosamente', pedidoId: pedido.id });
   } catch (error) {
     console.error('[CREATE] Error al crear pedido:', error);
     res.status(500).json({ message: 'Error interno al crear el pedido' });
   }
 };
 
-// Obtener un pedido por su ID
+// Obtener un pedido por su ID (incluye sus detalles y opciones)
 exports.getById = async (req, res) => {
   try {
     const { id } = req.params;
@@ -73,7 +59,8 @@ exports.getById = async (req, res) => {
   }
 };
 
-// Actualizar un pedido existente (solo campos permitidos)
+// Actualizar datos básicos del pedido (estado, tipo_entrega, etc.)
+// No modifica ni Crea detalles acá; los detalles se gestionan desde detalle.controller
 exports.update = async (req, res) => {
   try {
     const { id } = req.params;
@@ -92,7 +79,7 @@ exports.update = async (req, res) => {
   }
 };
 
-// Eliminar un pedido (borrado lógico)
+// Eliminar un pedido (soft‐delete). Los detalles y opciones se eliminan en cascada.
 exports.softDelete = async (req, res) => {
   try {
     const { id } = req.params;
@@ -106,3 +93,4 @@ exports.softDelete = async (req, res) => {
     res.status(500).json({ message: 'Error al eliminar pedido' });
   }
 };
+
